@@ -10,24 +10,31 @@ public class Add {
         int mul = 0, val = 0;
         ListNode result = null, index = null;
         while (l1 != null || l2 != null) {
-            if (l1 != null && l2 != null) {
-                val = l1.val + l2.val + mul;
+            int x = l1 == null ? 0 : l1.val;
+            int y = l2 == null ? 0 : l2.val;
 
-            } else if (l1 != null) {
-                val = l1.val + mul;
-            } else {
-                val = (l2.val + mul);
+            val = x + y + mul;
+            mul = val / 10;
+
+            if (l1 != null) {
+                l1 = l1.next;
             }
+            if (l2 != null) {
+                l2 = l2.next;
+            }
+
             if (index == null) {
-                index = new ListNode((val + mul) % 10);
+                //first node
+                index = new ListNode((val) % 10);
                 result = index;
             } else {
-                index.next = new ListNode((val + mul) % 10);
+                index.next = new ListNode((val) % 10);
                 index = index.next;
             }
-            mul =  val / 10;
-            l1 = l1.next;
-            l2 = l2.next;
+
+        }
+        if (mul > 0) {
+            index.next = new ListNode(mul);
         }
         return result;
     }
