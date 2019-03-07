@@ -41,11 +41,3 @@ public class Add {
 
 }
 
-class ListNode {
-    int val;
-    ListNode next;
-
-    ListNode(int x) {
-        val = x;
-    }
-}
