@@ -39,7 +39,7 @@ public class GenerateMatrix {
             endRow--;
             endCol--;
         }
-        if (startCol == startRow) {
+        if (n % 2 == 1 && startCol == startRow) {
             result[startRow][startCol] = ++num;
         }
         return result;
