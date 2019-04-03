@@ -21,6 +21,11 @@ public class Subsets2 {
             size++;
             temp = subListWithSize;
         }
+        List<Integer> self = new ArrayList<>();
+        for (int num : nums) {
+            self.add(num);
+        }
+        result.add(self);
         return result;
     }
 
@@ -28,13 +33,13 @@ public class Subsets2 {
         List<List<Integer>> result = new ArrayList<>();
         for (List<Integer> each : temp) {
             int index = findStart(each, nums);
-            while (index < nums.length) {
+            while (index < nums.length - 1) {
                 List<Integer> sub = new ArrayList<>();
                 sub.addAll(each);
+                index++;
                 sub.add(nums[index]);
                 result.add(sub);
-                index++;
-                while (index < nums.length && nums[index] == nums[index - 1]) {
+                while (index < nums.length && index < nums.length - 1 && nums[index] == nums[index + 1]) {
                     index++;
                 }
             }
@@ -43,8 +48,8 @@ public class Subsets2 {
     }
 
     private int findStart(List<Integer> each, int[] nums) {
-        if(each.size() == 0){
-            return 0;
+        if (each.size() == 0) {
+            return -1;
         }
         int index = each.size() - 1, size = 1;
         int flag = each.get(index);
@@ -58,9 +63,9 @@ public class Subsets2 {
             }
         }
         for (int i = 0; i < nums.length; i++) {
-            if(nums[i] == flag){
+            if (nums[i] == flag) {
                 size--;
-                while(size > 0){
+                while (size > 0) {
                     size--;
                     i++;
                 }
