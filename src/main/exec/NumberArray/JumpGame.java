@@ -7,7 +7,7 @@ import java.util.Arrays;
  * @since 3/15/19
  */
 public class JumpGame {
-
+    
     public static boolean canJump(int[] nums) {
         if (nums == null || nums.length == 0) {
             return true;
@@ -27,7 +27,7 @@ public class JumpGame {
             return false;
         }
     }
-
+    
     public static boolean canJump2(int[] nums) {
         if (nums == null || nums.length == 0) {
             return true;
@@ -39,23 +39,23 @@ public class JumpGame {
         for (i = 0; i < nums.length; i++) {
             if (nums[i] == 0 && i != (nums.length - 1)) {
                 int j;
-                for(j = 0; j < i; j++){
-                    if(nums[j] > (i - j)){
+                for (j = 0; j < i; j++) {
+                    if (nums[j] > (i - j)) {
                         break;
                     }
                 }
-                if(j >= i){
+                if (j >= i) {
                     return false;
                 }
             }
         }
         return i == nums.length;
     }
-
+    
     public static void main(String[] args) {
-        System.out.println(canJump2(new int[]{2,0, 0, 0}));
-        System.out.println(canJump2(new int[]{3,0, 0, 0}));
-//        System.out.println(canJump2(new int[]{3,2,1,0,4}));
+        System.out.println(canJump2(new int[] {2, 0, 0, 0}));
+        System.out.println(canJump2(new int[] {3, 0, 0, 0}));
+        //        System.out.println(canJump2(new int[]{3,2,1,0,4}));
     }
-
+    
 }
