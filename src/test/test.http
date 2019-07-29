@@ -1,0 +1,3 @@
+#### 一般GET请求
+GET http://www.baidu.com?hi=hello
+Accept: application/json
