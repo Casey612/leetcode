@@ -146,7 +146,7 @@ public class MinimumWindowSubstring {
         return true;
     }
     
-    //活动窗口法
+    //活动窗口法 窗口由大变小
     public String slidingWindown(String s, String t) {
         
         if (s == null || t == null || s.length() == 0 || t.length() == 0 || s.length() < t.length()) {
@@ -159,7 +159,7 @@ public class MinimumWindowSubstring {
         if (s.contains(t)) {
             return t;
         }
-    
+        
         Map<Character, Integer> map = initCharSizeMap(t, 0, t.length());
         
         List<Integer> targetIndex = new ArrayList<>();
@@ -173,13 +173,12 @@ public class MinimumWindowSubstring {
         int startIndex = 0, endIndex = s.length() - 1;
         int length = s.length();
         
-        
         while (leftIndex <= rightIndex && rightIndex < targetIndex.size()) {
             int left = targetIndex.get(leftIndex);
             int right = targetIndex.get(rightIndex);
             if (sizeSatisfy(s, left, right, map)) {
                 rightIndex--;
-            } else  {
+            } else {
                 rightIndex++;
                 if (rightIndex >= targetIndex.size()) {
                     break;
@@ -202,13 +201,120 @@ public class MinimumWindowSubstring {
         }
     }
     
+    /**
+     *  活动窗口法 窗口由小变大 277/278 passed WTF
+     */
+    public String slidingWindow(String s, String t) {
+        if (s == null || t == null || s.length() == 0 || t.length() == 0 || s.length() < t.length()) {
+            return "";
+        }
+        
+        if (t.length() == 1) {
+            return s.contains(t) ? t : "";
+        }
+        if (s.contains(t)) {
+            return t;
+        }
+        
+        Map<Character, Integer> map = initCharSizeMap(t, 0, t.length());
+        List<Integer> targetIndex = initTargetIndex(s, map.keySet());
+        
+        if (targetIndex.isEmpty()) {
+            return "";
+        }
+        
+        int leftIndex = 0;
+        int left = targetIndex.get(leftIndex), right = left;
+        
+        int count = 0;
+        int startIndex = 0, endIndex = s.length() - 1;
+        int length = s.length();
+        
+        boolean reset = false;
+        
+        while (left <= right && left < s.length()) {
+            char rightChar = s.charAt(right);
+            if (map.containsKey(rightChar)) {
+                int maintain = map.get(rightChar);
+                if (maintain >= 1) {
+                    count++;
+                    if (count == t.length()) {
+                        int temp = right - left + 1;
+                        if (temp < length) {
+                            length = temp;
+                            startIndex = left;
+                            endIndex = right;
+                        }
+                        reset = true;
+                    }
+                }
+                maintain--;
+                map.put(rightChar, maintain);
+                if (reset) {
+                    //复位
+                    int tempLeft = left;
+                    while (tempLeft <= right) {
+                        char leftChar = s.charAt(tempLeft);
+                        if (map.containsKey(leftChar)) {
+                            int time = map.get(leftChar);
+                            time++;
+                            map.put(leftChar, time);
+                        }
+                        tempLeft++;
+                    }
+                    count = 0;
+                    leftIndex++;
+                    left = targetIndex.get(leftIndex);
+                    right = left - 1;
+                    reset = false;
+                }
+            }
+            right++;
+            if (right == s.length()) {
+                int tempLeft = left;
+                while (tempLeft < s.length()) {
+                    char leftChar = s.charAt(tempLeft);
+                    if (map.containsKey(leftChar)) {
+                        int time = map.get(leftChar);
+                        time++;
+                        map.put(leftChar, time);
+                    }
+                    tempLeft++;
+                }
+                count = 0;
+                leftIndex++;
+                if (leftIndex >= targetIndex.size()) {
+                    break;
+                }
+                left = targetIndex.get(leftIndex);
+                right = left;
+            }
+        }
+        if (startIndex == 0 && endIndex == s.length() - 1) {
+            return sizeSatisfy(s, startIndex, endIndex, map) ? s : "";
+        } else {
+            return s.substring(startIndex, endIndex + 1);
+        }
+    }
+    
+    private List<Integer> initTargetIndex(String s, Set<Character> keySet) {
+        List<Integer> result = new ArrayList<>();
+        for (int index = 0; index < s.length(); index++) {
+            char c = s.charAt(index);
+            if (keySet.contains(c)) {
+                result.add(index);
+            }
+        }
+        return result;
+    }
+    
     private boolean sizeSatisfy(String s, int left, int right, Map<Character, Integer> map) {
         int size = right - left + 1;
         if (size < map.keySet().size()) {
             return false;
         }
         Map<Character, Integer> sMap = initCharSizeMap(s, left, right + 1);
-        for (Character c : map.keySet()){
+        for (Character c : map.keySet()) {
             int sSize = sMap.getOrDefault(c, 0);
             int tSize = map.get(c);
             if (sSize < tSize) {
@@ -220,7 +326,7 @@ public class MinimumWindowSubstring {
     
     private Map<Character, Integer> initCharSizeMap(String t, int startIndex, int endIndex) {
         Map<Character, Integer> result = new HashMap<>();
-        for (int i = startIndex; i < endIndex; i++){
+        for (int i = startIndex; i < endIndex; i++) {
             char c = t.charAt(i);
             int size = 1;
             if (result.containsKey(c)) {
@@ -229,30 +335,6 @@ public class MinimumWindowSubstring {
             result.put(c, size);
         }
         return result;
-    }
-    
-    private boolean containSatisfy(int startIndex, int endIndex, Map<Character, Set<Integer>> map, String t) {
-        Map<Character, Set<Integer>> indexMap = new HashMap<>(map);
-        for (Character c : map.keySet()) {
-            Set<Integer> set = new HashSet<>(map.get(c));
-            indexMap.put(c, set);
-        }
-        for (int i = 0; i < t.length(); i++) {
-            char c = t.charAt(i);
-            Set<Integer> indexes = indexMap.get(c);
-            Integer target = Integer.MIN_VALUE;
-            for (Integer index : indexes) {
-                if (index >= startIndex && index <= endIndex) {
-                    target = index;
-                    break;
-                }
-            }
-            if (target == Integer.MIN_VALUE) {
-                return false;
-            }
-            indexes.remove(target);
-        }
-        return true;
     }
     
     public static void main(String[] args) {
@@ -276,7 +358,19 @@ public class MinimumWindowSubstring {
         //System.out.println(solution.slidingWindown("aaaaaaaaaaaabbbbbcdd", "abcdd"));
         //System.out.println(solution.slidingWindown("abc", "ac"));
         //System.out.println(solution.slidingWindown("bba", "ab"));
-        System.out.println(solution.slidingWindown("obzcopzocynyrsgsarijyxnkpnukkrvzuwdjldxndmnvevpgmxrmvfwkutwekrffnloyqnntbdohyfqndhzyoykiripdzwiojyoznbtogjyfpouuxvumtewmmnqnkadvzrvouqfbbdiqremqzgevkbhyoznacqwbhtrcjwfkzpdstpjswnpiqxjhywjanhdwavajrhwtwzlrqwmombxcaijzevbtcfsdcuovckoalcseaesmhrrizcjgxkbartdtotpsefsrjmvksqyahpijsrppdqpvmuocofuunonybjivbjviyftsyiicbzxnwnrmvlgkzticetyfcvqcbjvbufdxgcmesdqnowzpshuwcseenwjqhgsdlxatamysrohfnixfprdsljyyfhrnnjsagtuihuczilgvtfcjwgdhpbixlzmakebszxbhrdibpoxiwztshwczamwnninzmqrmpsviydkptjzpktksrortapgpxwojofxeasoyvyprjoguhqobehugwdvtzlenrcttuitsiijswpogicjolfxhiscjggzzissfcnxnvgftxvbfzkukqrtalvktdjsodmtgzqtuyaqvvrbuexgwqzwduixzrpnvegddyyywaquxjxrnuzlmyipuqotkghfkpknqinoidifnfyczzonxydtqroazxhjnrxfbmtlqcsfhshjrxwqvblovaouxwempdrrplefnxmwrwfjtebrfnfanvvmtbzjesctdgbsfnpxlwihalyiafincfcwgdfkvhebphtxukwgjgplrntsuchyjjuqozakiglangxkttsczhnswjksnuqwflmumpexxrznzwxurrysaokwxxqkrggytvsgkyfjrewrcvntomnoazmzycjrjrqemimyhriyxgrzcfuqtjhvjtuhwfzhwpljzajitrhryaqchnuawbxhxrpvyqcvhpggrpplhychyulijhkglinibedauhvdydkqszdbzfkzbvhldstocgydnbfjkcnkfxcyyfbzmmyojgzmasccaahpdnzproaxnexnkamwmkmwslksfpwirexxtymkmojztgmfhydvlqtddewjvsrmyqjrpycbmndhupmdqqabiuelacuvxnhxgtpvrtwfgzpcrbhhtikbcqpctlxszgpfbgcsbaaiapmtsucocmpecgixshrrnhyrpalralbccnxvjzjllarqhznzghswqsnfuyywmzbopyjyauknxddgdthlabjqtwxpxwljvoxkpjjpfvccyikbbrpdsyvlxscuoofkecwtnfkvcnzbxkeabtdusyhrqklhaqreupakxkfzxgawqfwsaboszvlshwzhosojjotgyagygguzntrouhiweuomqptfjjqsxlbylhwtpssdlltgubczxslqjgxuqnmpynnlwjgmebrpokxjnbiltvbebyytnnjlcwyzignmhedwqbfdepqakrelrdfesqrumptwwgifmmbepiktxavhuavlfaqxqhreznbvvlakzeoomykkzftthoemqwliednfsqcnbexbimrvkdhllcesrlhhjsspvfupxwdybablotibypmjutclgjurbmhztboqatrdwsomnxnmocvixxvfiqwmednahdqhxjkvcyhpxxdmzzuyyqdjibvmfkmonfxmohhshpkhmntnoplphqyprveyfsmsxjfosmicdsjrieeytpnbhlsziwxnpmgoxneqbnufhfwrjbqcsdfarybzwaplmxckkgclvwqdbpumsmqkswmjwnkuqbicykoisqwoootrdpdvcuiuswfqmrkctsgrevcxnyncmivsxbpbxzxpwchiwtkroqisnmrbmefbmatmdknaklpgpyqlsccgunaibsloyqpnsibwuowebomrmcegejozypjzjunjmeygozcjqbnrpakdermjcckartbcppmbtkhkmmtcngteigjnxxyzaibtdcwutkvpwezisskfaeljmxyjwykwglqlnofhycwuivdbnpintuyhtyqpwaoelgpbuwiuyeqhbvkqlsfgmeoheexbhnhutxvnvfjwlzfmvpcghiowocdsjcvqrdmkcizxnivbianfpsnzabxqecinhgfyjrjlbikrrgsbgfgyxtzzwwpayapfgueroncpxogouyrdgzdfucfrywtywjeefkvtzxlwmrniselyeodysirqflpduvibfdvedgcrzpzrunpadvawfsmmddqzaaahfxlifobffbyzqqbtlcpquedzjvykvarayfldvmkapjcfzfbmhscdwhciecsbdledspgpdtsteuafzbrjuvmsfrajtulwirzagiqjdiehefmfifocadxfuxrpsemavncdxuoaetjkavqicgndjkkfhbvbhjdcygfwcwyhpirrfjziqonbyxhibelinpllxsjzoiifscwzlyjdmwhnuovvugfhvquuleuzmehggdfubpzolgbhwyeqekzccuypaspozwuhbzbdqdtejuniuuyagackubauvriwneeqfhtwkocuipcelcfrcjcymcuktegiikyosumeioatfcxrheklookaqekljtvtdwhxsteajevpjviqzudnjnqbucnfvkybggaybebljwcstmktgnipdyrxbgewqczzkaxmeazpzbjsntltjwlmuclxirwytvxgvxscztryubtjweehapvxrguzzsatozzjytnamfyiitreyxmanhzeqwgpoikcjlokebksgkaqetverjegqgkicsyqcktmwjwakivtsxjwrgakphqincqrxqhzbcnxljzwturmsaklhnvyungjrxaonjqomdnxpnvihmwzphkyuhwqwdboabepmwgyatyrgtboiypxfavbjtrgwswyvcqhzwibpisydtmltbkydhznbsvxktyfxopwkxzbftzknnwipghuoijrbgqnzovxckvojvsqqraffwowfvqvfcmiicwitrhxdeombgesxexedlakitfovtydxunqnwqqdeeekiwjnwoshqcsljiicgobbbuqakjdonjawgjlezdnqhfdqnmsuavxdpnfzwipmspiabveaarshzwxmirgkmfncvtdrdvfxkpxlkdokxgtwcskmjryyymcthfnkasinihaunohkxaibtsqelockaefjmsuolebtnepauwmrxutspjwaxbmahsjtkfkxlnszribmeofbkyvbjscjtqjakuwvcgunvnonvqbbggfshauqsyznokqbhowjusypfnecffenojfvlblgzntqzlrgzprvhqnpfrrkzxznieiuivajivzijsqijigtatifmbplzqahuidegfoobpymkputzamzvweiyvvzlwihgmmmrcburbgbsdxrfjsbiylitghgcpqjbevvgypxcybubyoijijrhuzcdijfybqbfowlookqmlnplbxvjjosfqviygqyhgamuwzjklbyzopkrnhbywtfoqomweldmlrhjqswctubiknzzvcztyehouvnyiqnvkufaobehxhrjvtisxjlxoumipzjarwvbsaegdkpbsjmpevjbewzuqnfhoohhmdjgfpmjzdmtmykqvtucptwfidpwtwffzolffzqfdearclkyeecuzabjeqhxpmfodsvisnpxrqowdawheydfyhoexvcmihdlzavtqlshdhdgjzpozvvackebhgqppvcrvymljfvooauxcjnbejdivikcoaugxwzsulgfqdtefpehbrlhaoqxwcancuvbqutnfbuygoemditeagmcveatgaikwflozgdhkyfqmjcruyyuemwbqwxyyfiwnvlmbovlmccaoguieu",
+    
+        System.out.println(solution.slidingWindow("ADOBECOPEBANC", "ABC"));
+        System.out.println(solution.slidingWindow("ADOBECOPEBANCABC", "ABC"));
+        System.out.println(solution
+            .slidingWindow("ask_not_what_your_country_can_do_for_you_ask_what_you_can_do_for_your_country",
+            "ask_country"));
+        System.out.println(solution.slidingWindow("abbbb", "aa"));
+        System.out.println(solution.slidingWindow("aaaaaaaaaaaabbbbbcdd", "abcdd"));
+        System.out.println(solution.slidingWindow("abc", "ac"));
+        System.out.println(solution.slidingWindow("bba", "ab"));
+        //
+        System.out.println(solution.slidingWindow(
+            "obzcopzocynyrsgsarijyxnkpnukkrvzuwdjldxndmnvevpgmxrmvfwkutwekrffnloyqnntbdohyfqndhzyoykiripdzwiojyoznbtogjyfpouuxvumtewmmnqnkadvzrvouqfbbdiqremqzgevkbhyoznacqwbhtrcjwfkzpdstpjswnpiqxjhywjanhdwavajrhwtwzlrqwmombxcaijzevbtcfsdcuovckoalcseaesmhrrizcjgxkbartdtotpsefsrjmvksqyahpijsrppdqpvmuocofuunonybjivbjviyftsyiicbzxnwnrmvlgkzticetyfcvqcbjvbufdxgcmesdqnowzpshuwcseenwjqhgsdlxatamysrohfnixfprdsljyyfhrnnjsagtuihuczilgvtfcjwgdhpbixlzmakebszxbhrdibpoxiwztshwczamwnninzmqrmpsviydkptjzpktksrortapgpxwojofxeasoyvyprjoguhqobehugwdvtzlenrcttuitsiijswpogicjolfxhiscjggzzissfcnxnvgftxvbfzkukqrtalvktdjsodmtgzqtuyaqvvrbuexgwqzwduixzrpnvegddyyywaquxjxrnuzlmyipuqotkghfkpknqinoidifnfyczzonxydtqroazxhjnrxfbmtlqcsfhshjrxwqvblovaouxwempdrrplefnxmwrwfjtebrfnfanvvmtbzjesctdgbsfnpxlwihalyiafincfcwgdfkvhebphtxukwgjgplrntsuchyjjuqozakiglangxkttsczhnswjksnuqwflmumpexxrznzwxurrysaokwxxqkrggytvsgkyfjrewrcvntomnoazmzycjrjrqemimyhriyxgrzcfuqtjhvjtuhwfzhwpljzajitrhryaqchnuawbxhxrpvyqcvhpggrpplhychyulijhkglinibedauhvdydkqszdbzfkzbvhldstocgydnbfjkcnkfxcyyfbzmmyojgzmasccaahpdnzproaxnexnkamwmkmwslksfpwirexxtymkmojztgmfhydvlqtddewjvsrmyqjrpycbmndhupmdqqabiuelacuvxnhxgtpvrtwfgzpcrbhhtikbcqpctlxszgpfbgcsbaaiapmtsucocmpecgixshrrnhyrpalralbccnxvjzjllarqhznzghswqsnfuyywmzbopyjyauknxddgdthlabjqtwxpxwljvoxkpjjpfvccyikbbrpdsyvlxscuoofkecwtnfkvcnzbxkeabtdusyhrqklhaqreupakxkfzxgawqfwsaboszvlshwzhosojjotgyagygguzntrouhiweuomqptfjjqsxlbylhwtpssdlltgubczxslqjgxuqnmpynnlwjgmebrpokxjnbiltvbebyytnnjlcwyzignmhedwqbfdepqakrelrdfesqrumptwwgifmmbepiktxavhuavlfaqxqhreznbvvlakzeoomykkzftthoemqwliednfsqcnbexbimrvkdhllcesrlhhjsspvfupxwdybablotibypmjutclgjurbmhztboqatrdwsomnxnmocvixxvfiqwmednahdqhxjkvcyhpxxdmzzuyyqdjibvmfkmonfxmohhshpkhmntnoplphqyprveyfsmsxjfosmicdsjrieeytpnbhlsziwxnpmgoxneqbnufhfwrjbqcsdfarybzwaplmxckkgclvwqdbpumsmqkswmjwnkuqbicykoisqwoootrdpdvcuiuswfqmrkctsgrevcxnyncmivsxbpbxzxpwchiwtkroqisnmrbmefbmatmdknaklpgpyqlsccgunaibsloyqpnsibwuowebomrmcegejozypjzjunjmeygozcjqbnrpakdermjcckartbcppmbtkhkmmtcngteigjnxxyzaibtdcwutkvpwezisskfaeljmxyjwykwglqlnofhycwuivdbnpintuyhtyqpwaoelgpbuwiuyeqhbvkqlsfgmeoheexbhnhutxvnvfjwlzfmvpcghiowocdsjcvqrdmkcizxnivbianfpsnzabxqecinhgfyjrjlbikrrgsbgfgyxtzzwwpayapfgueroncpxogouyrdgzdfucfrywtywjeefkvtzxlwmrniselyeodysirqflpduvibfdvedgcrzpzrunpadvawfsmmddqzaaahfxlifobffbyzqqbtlcpquedzjvykvarayfldvmkapjcfzfbmhscdwhciecsbdledspgpdtsteuafzbrjuvmsfrajtulwirzagiqjdiehefmfifocadxfuxrpsemavncdxuoaetjkavqicgndjkkfhbvbhjdcygfwcwyhpirrfjziqonbyxhibelinpllxsjzoiifscwzlyjdmwhnuovvugfhvquuleuzmehggdfubpzolgbhwyeqekzccuypaspozwuhbzbdqdtejuniuuyagackubauvriwneeqfhtwkocuipcelcfrcjcymcuktegiikyosumeioatfcxrheklookaqekljtvtdwhxsteajevpjviqzudnjnqbucnfvkybggaybebljwcstmktgnipdyrxbgewqczzkaxmeazpzbjsntltjwlmuclxirwytvxgvxscztryubtjweehapvxrguzzsatozzjytnamfyiitreyxmanhzeqwgpoikcjlokebksgkaqetverjegqgkicsyqcktmwjwakivtsxjwrgakphqincqrxqhzbcnxljzwturmsaklhnvyungjrxaonjqomdnxpnvihmwzphkyuhwqwdboabepmwgyatyrgtboiypxfavbjtrgwswyvcqhzwibpisydtmltbkydhznbsvxktyfxopwkxzbftzknnwipghuoijrbgqnzovxckvojvsqqraffwowfvqvfcmiicwitrhxdeombgesxexedlakitfovtydxunqnwqqdeeekiwjnwoshqcsljiicgobbbuqakjdonjawgjlezdnqhfdqnmsuavxdpnfzwipmspiabveaarshzwxmirgkmfncvtdrdvfxkpxlkdokxgtwcskmjryyymcthfnkasinihaunohkxaibtsqelockaefjmsuolebtnepauwmrxutspjwaxbmahsjtkfkxlnszribmeofbkyvbjscjtqjakuwvcgunvnonvqbbggfshauqsyznokqbhowjusypfnecffenojfvlblgzntqzlrgzprvhqnpfrrkzxznieiuivajivzijsqijigtatifmbplzqahuidegfoobpymkputzamzvweiyvvzlwihgmmmrcburbgbsdxrfjsbiylitghgcpqjbevvgypxcybubyoijijrhuzcdijfybqbfowlookqmlnplbxvjjosfqviygqyhgamuwzjklbyzopkrnhbywtfoqomweldmlrhjqswctubiknzzvcztyehouvnyiqnvkufaobehxhrjvtisxjlxoumipzjarwvbsaegdkpbsjmpevjbewzuqnfhoohhmdjgfpmjzdmtmykqvtucptwfidpwtwffzolffzqfdearclkyeecuzabjeqhxpmfodsvisnpxrqowdawheydfyhoexvcmihdlzavtqlshdhdgjzpozvvackebhgqppvcrvymljfvooauxcjnbejdivikcoaugxwzsulgfqdtefpehbrlhaoqxwcancuvbqutnfbuygoemditeagmcveatgaikwflozgdhkyfqmjcruyyuemwbqwxyyfiwnvlmbovlmccaoguieu",
             "cjgamyzjwxrgwedhsexosmswogckohesskteksqgrjonnrwhywxqkqmywqjlxnfrayykqotkzhxmbwvzstrcjfchvluvbaobymlrcgbbqaprwlsqglsrqvynitklvzmvlamqipryqjpmwhdcsxtkutyfoiqljfhxftnnjgmbpdplnuphuksoestuckgopnlwiyltezuwdmhsgzzajtrpnkkswsglhrjprxlvwftbtdtacvclotdcepuahcootzfkwqhtydwrgqrilwvbpadvpzwybmowluikmsfkvbebrxletigjjlealczoqnnejvowptikumnokysfjyoskvsxztnqhcwsamopfzablnrxokdxktrwqjvqfjimneenqvdxufahsshiemfofwlyiionrybfchuucxtyctixlpfrbngiltgtbwivujcyrwutwnuajcxwtfowuuefpnzqljnitpgkobfkqzkzdkwwpksjgzqvoplbzzjuqqgetlojnblslhpatjlzkbuathcuilqzdwfyhwkwxvpicgkxrxweaqevziriwhjzdqanmkljfatjifgaccefukavvsfrbqshhswtchfjkausgaukeapanswimbznstubmswqadckewemzbwdbogogcysfxhzreafwxxwczigwpuvqtathgkpkijqiqrzwugtr"));
     }
     
