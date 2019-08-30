@@ -1,6 +1,7 @@
 package exec.Tree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -38,6 +39,15 @@ public class LevelOrderTraversal {
             }
         }
         return result;
+    }
+    
+    public void showTreeInLeverOrder(TreeNode root) {
+        List<List<Integer>> list = levelOrder(root);
+        for (List<Integer> item : list) {
+            System.out.print(Arrays.toString(item.toArray()));
+            System.out.print(" ");
+        }
+        System.out.println();
     }
     
     public static void main(String[] args) {
