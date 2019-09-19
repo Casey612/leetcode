@@ -67,7 +67,6 @@ public class LevelOrderTraversal {
         node2.right = node4;
     
         System.out.println(traversal.levelOrder(root));
-        
     }
     
 }
