@@ -12,7 +12,7 @@ public class MiddleOrderTree {
 
     /**
      * 中序遍历
-     *
+     * 递归
      * @param root
      * @return
      */
@@ -30,7 +30,7 @@ public class MiddleOrderTree {
 
     /**
      * 中序遍历
-     *
+     * 循环
      * @param root
      * @return
      */
