@@ -21,6 +21,19 @@ public class MaximumSubarray {
         return result;
     }
 
+    public static int maxSUBArray(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        int result = nums[0], sum = nums[0];
+        for (int i = 1; i < nums.length; i++) {
+            sum += nums[i];
+            sum = Math.max(sum, nums[i]);
+            result = Math.max(sum, result);
+        }
+        return result;
+    }
+
     public static int maxSubArray3(int[] nums) {
         if (nums == null || nums.length == 0) {
             return 0;
