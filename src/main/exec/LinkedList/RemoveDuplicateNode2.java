@@ -1,7 +1,5 @@
 package exec.LinkedList;
 
-import exec.LinkedList.ListNode;
-
 public class RemoveDuplicateNode2 {
 
     public ListNode deleteDuplicates(ListNode head) {

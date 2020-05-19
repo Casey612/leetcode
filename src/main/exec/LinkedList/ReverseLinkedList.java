@@ -1,7 +1,5 @@
 package exec.LinkedList;
 
-import exec.LinkedList.ListNode;
-
 /**
  * @author yuzhe
  * @since 3/27/19
