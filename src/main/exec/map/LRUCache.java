@@ -1,63 +1,41 @@
 package exec.map;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 class LRUCache {
 
     Map<Integer, Integer> valueMap;
-    Map<Integer, Integer> timesMap;
 
     int minTimeKey = -1;
     int capacity = 0;
 
     public LRUCache(int capacity) {
         valueMap = new LinkedHashMap<>(capacity);
-        timesMap = new HashMap<>(capacity);
         this.capacity = capacity;
     }
 
     public int get(int key) {
-        if (valueMap.containsKey(key)) {
-            int times = timesMap.getOrDefault(key, 0) + 1;
-            timesMap.put(key, times);
-            minTimeKey = findMinKey();
-        }
-        return valueMap.getOrDefault(key, -1);
-    }
-
-    private int findMinKey() {
-        int times = Integer.MAX_VALUE, result = -1;
-        for (int key : valueMap.keySet()) {
-            int curTime = timesMap.get(key);
-            if (curTime < times) {
-                times = curTime;
-                result = key;
-            }
-        }
-        return result;
+       if (valueMap.containsKey(key)) {
+           int value = valueMap.get(key);
+           valueMap.remove(key);
+           valueMap.put(key, value);
+           minTimeKey = valueMap.keySet().iterator().next();
+           return value;
+       } else {
+           return -1;
+       }
     }
 
     public void put(int key, int value) {
         if (valueMap.size() >= capacity && !valueMap.containsKey(key)) {
-            //需要清除一个key
+            //容量不够, 删除节点
             valueMap.remove(minTimeKey);
-            timesMap.remove(minTimeKey);
+        } else if (valueMap.containsKey(key)) {
+            valueMap.remove(key);
         }
         valueMap.put(key, value);
-        timesMap.put(key, 0);
-        minTimeKey = findMinKey();
-    }
-
-    public static void main(String[] args) {
-        LRUCache cache = new LRUCache(2);
-        cache.put(2, 1);
-        cache.put(2, 2);
-        System.out.println(cache.get(2));
-        cache.put(1, 1);
-        cache.put(4, 1);
-        System.out.println(cache.get(2));
+        minTimeKey = valueMap.keySet().iterator().next();
     }
 
 }

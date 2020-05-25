@@ -14,40 +14,20 @@ public class MidNum {
         boolean flag = (sumLength % 2) == 0;
         int[] array = new int[sumLength];
         int index1 = 0, index2 = 0, indexSum = 0;
-        while (index1 < nums1.length && index2 < nums2.length) {
+        while (index1 < nums1.length || index2 < nums2.length) {
             int num;
-            if (nums1[index1] < nums2[index2]) {
+            if (index1 < nums1.length && index2 < nums2.length) {
+                if (nums1[index1] < nums2[index2]) {
+                    num = nums1[index1++];
+                } else {
+                    num = nums2[index2++];
+                }
+            } else if (index1 < nums1.length){
                 num = nums1[index1++];
             } else {
                 num = nums2[index2++];
             }
 
-            if (!flag && indexSum == indexFlag) {
-                //only one target num
-                return num;
-            } else if (flag && (indexSum == (indexFlag - 1))) {
-                result += num;
-            } else if (flag && (indexSum == indexFlag)) {
-                result += num;
-                return result / 2;
-            }
-            array[indexSum++] = num;
-        }
-        while (index1 < nums1.length) {
-            int num = nums1[index1++];
-            if (!flag && indexSum == indexFlag) {
-                //only one target num
-                return num;
-            } else if (flag && (indexSum == (indexFlag - 1))) {
-                result += num;
-            } else if (flag && (indexSum == indexFlag)) {
-                result += num;
-                return result / 2;
-            }
-            array[indexSum++] = num;
-        }
-        while (index2 < nums2.length) {
-            int num = nums2[index2++];
             if (!flag && indexSum == indexFlag) {
                 //only one target num
                 return num;
@@ -80,7 +60,6 @@ public class MidNum {
                 // i is too big
                 iMax = i - 1;
             } else { // i is perfect
-                System.out.println("i:" + i);
                 int maxLeft = 0;
                 if (i == 0) {
                     maxLeft = B[j - 1];
@@ -113,6 +92,8 @@ public class MidNum {
         System.out.println(r1);
         double r2 = findMedianSortedArrays1(new int[]{1, 3}, new int[]{2, 4});
         System.out.println(r2);
+        double r3 = findMedianSortedArrays1(new int[]{1, 3, 5, 7, 9}, new int[]{2, 4, 6, 8});
+        System.out.println(r3);
     }
 
 }
