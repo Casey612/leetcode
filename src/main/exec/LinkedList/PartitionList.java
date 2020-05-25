@@ -1,7 +1,5 @@
 package exec.LinkedList;
 
-import exec.LinkedList.ListNode;
-
 public class PartitionList {
 
     public ListNode partition(ListNode head, int x) {

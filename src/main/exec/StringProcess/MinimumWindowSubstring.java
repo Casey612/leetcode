@@ -147,7 +147,7 @@ public class MinimumWindowSubstring {
     }
     
     //活动窗口法 窗口由大变小
-    public String slidingWindown(String s, String t) {
+    public String slidingWindow2(String s, String t) {
         
         if (s == null || t == null || s.length() == 0 || t.length() == 0 || s.length() < t.length()) {
             return "";
@@ -217,86 +217,65 @@ public class MinimumWindowSubstring {
         }
         
         Map<Character, Integer> map = initCharSizeMap(t, 0, t.length());
-        List<Integer> targetIndex = initTargetIndex(s, map.keySet());
-        
-        if (targetIndex.isEmpty()) {
-            return "";
-        }
-        
-        int leftIndex = 0;
-        int left = targetIndex.get(leftIndex), right = left;
-        
-        int count = 0;
-        int startIndex = 0, endIndex = s.length() - 1;
-        int length = s.length();
-        
-        boolean reset = false;
-        
-        while (left <= right && left < s.length()) {
-            char rightChar = s.charAt(right);
-            if (map.containsKey(rightChar)) {
-                int maintain = map.get(rightChar);
-                if (maintain >= 1) {
-                    count++;
-                    if (count == t.length()) {
-                        int temp = right - left + 1;
-                        if (temp < length) {
-                            length = temp;
-                            startIndex = left;
-                            endIndex = right;
+        Map<Character, Integer> curSizeMap = new HashMap<>();
+        int minLength = Integer.MAX_VALUE;
+        String result = "";
+        int left = 0;
+        while (left < s.length()) {
+            int right = left;
+            while (right < s.length()) {
+                char c = s.charAt(right);
+                if (map.containsKey(c)) {
+                    int num = 1;
+                    if (curSizeMap.containsKey(c)) {
+                        num += curSizeMap.get(c);
+                    }
+                    curSizeMap.put(c, num);
+                    if (satisfy(curSizeMap, map)) {
+                        int temp  = left;
+                        while (temp < right) {
+                            char tempC = s.charAt(temp);
+                            if (map.containsKey(tempC)) {
+                                int num1 = curSizeMap.get(tempC);
+                                int num2 = map.get(tempC);
+                                if (num1 - 1 < num2) {
+                                    break;
+                                }
+                                curSizeMap.put(tempC, num1 - 1);
+                            }
+                            temp++;
                         }
-                        reset = true;
-                    }
-                }
-                maintain--;
-                map.put(rightChar, maintain);
-                if (reset) {
-                    //复位
-                    int tempLeft = left;
-                    while (tempLeft <= right) {
-                        char leftChar = s.charAt(tempLeft);
-                        if (map.containsKey(leftChar)) {
-                            int time = map.get(leftChar);
-                            time++;
-                            map.put(leftChar, time);
+                        if (minLength > (right - temp + 1)) {
+                            minLength = right - temp + 1;
+                            result = s.substring(temp, right + 1);
                         }
-                        tempLeft++;
+                        break;
                     }
-                    count = 0;
-                    leftIndex++;
-                    left = targetIndex.get(leftIndex);
-                    right = left - 1;
-                    reset = false;
                 }
+                right++;
             }
-            right++;
-            if (right == s.length()) {
-                int tempLeft = left;
-                while (tempLeft < s.length()) {
-                    char leftChar = s.charAt(tempLeft);
-                    if (map.containsKey(leftChar)) {
-                        int time = map.get(leftChar);
-                        time++;
-                        map.put(leftChar, time);
-                    }
-                    tempLeft++;
-                }
-                count = 0;
-                leftIndex++;
-                if (leftIndex >= targetIndex.size()) {
-                    break;
-                }
-                left = targetIndex.get(leftIndex);
-                right = left;
-            }
+            do {
+                left++;
+            } while (left < s.length() && !map.containsKey(s.charAt(left)));
+            curSizeMap.clear();
         }
-        if (startIndex == 0 && endIndex == s.length() - 1) {
-            return sizeSatisfy(s, startIndex, endIndex, map) ? s : "";
-        } else {
-            return s.substring(startIndex, endIndex + 1);
-        }
+        return result;
     }
-    
+
+    private boolean satisfy(Map<Character, Integer> map1, Map<Character, Integer> map2) {
+        if (map1.keySet().size() != map2.keySet().size()) {
+            return false;
+        }
+        for (Character c : map2.keySet()) {
+            int num1 = map1.getOrDefault(c, 0);
+            int num2 = map2.getOrDefault(c, 0);
+            if (num1 < num2) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private List<Integer> initTargetIndex(String s, Set<Character> keySet) {
         List<Integer> result = new ArrayList<>();
         for (int index = 0; index < s.length(); index++) {
@@ -339,26 +318,25 @@ public class MinimumWindowSubstring {
     
     public static void main(String[] args) {
         MinimumWindowSubstring solution = new MinimumWindowSubstring();
-        //System.out.println(solution.minWindow("ADOBECOPEBANC", "ABC"));
-        //System.out.println(solution.minWindow("bbaa", "aba"));
-        //System.out.println(solution
-        //    .minWindow("ask_not_what_your_country_can_do_for_you_ask_what_you_can_do_for_your_country",
-        //    "ask_country"));
-        //System.out.println(solution.minWindow("abbbb", "aa"));
-        //System.out.println(solution.minWindow("aaaaaaaaaaaabbbbbcdd", "abcdd"));
-        //System.out.println(solution.minWindow
-        // ("wegdtzwabazduwwdysdetrrctotpcepalxdewzezbfewbabbseinxbqqplitpxtcwwhuyntbtzxwzyaufihclztckdwccpeyonumbpnuonsnnsjscrvpsqsftohvfnvtbphcgxyumqjzltspmphefzjypsvugqqjhzlnylhkdqmolggxvneaopadivzqnpzurmhpxqcaiqruwztroxtcnvhxqgndyozpcigzykbiaucyvwrjvknifufxducbkbsmlanllpunlyohwfsssiazeixhebipfcdqdrcqiwftutcrbxjthlulvttcvdtaiwqlnsdvqkrngvghupcbcwnaqiclnvnvtfihylcqwvderjllannflchdklqxidvbjdijrnbpkftbqgpttcagghkqucpcgmfrqqajdbynitrbzgwukyaqhmibpzfxmkoeaqnftnvegohfudbgbbyiqglhhqevcszdkokdbhjjvqqrvrxyvvgldtuljygmsircydhalrlgjeyfvxdstmfyhzjrxsfpcytabdcmwqvhuvmpssingpmnpvgmpletjzunewbamwiirwymqizwxlmojsbaehupiocnmenbcxjwujimthjtvvhenkettylcoppdveeycpuybekulvpgqzmgjrbdrmficwlxarxegrejvrejmvrfuenexojqdqyfmjeoacvjvzsrqycfuvmozzuypfpsvnzjxeazgvibubunzyuvugmvhguyojrlysvxwxxesfioiebidxdzfpumyon","ozgzyywxvtublcl"));
-        
-        //System.out.println(solution.slidingWindown("ADOBECOPEBANC", "ABC"));
-        //System.out.println(solution.slidingWindown("ADOBECOPEBANCABC", "ABC"));
-        //System.out.println(solution
-        //    .slidingWindown("ask_not_what_your_country_can_do_for_you_ask_what_you_can_do_for_your_country",
-        //    "ask_country"));
-        //System.out.println(solution.slidingWindown("abbbb", "aa"));
-        //System.out.println(solution.slidingWindown("aaaaaaaaaaaabbbbbcdd", "abcdd"));
-        //System.out.println(solution.slidingWindown("abc", "ac"));
-        //System.out.println(solution.slidingWindown("bba", "ab"));
-    
+//        System.out.println(solution.minwindow1("ADOBECOPEBANC", "ABC"));
+//        System.out.println(solution.minwindow1("bbaa", "aba"));
+//        System.out.println(solution
+//            .minwindow1("ask_not_what_your_country_can_do_for_you_ask_what_you_can_do_for_your_country", "ask_country"));
+//        System.out.println(solution.minwindow1("abbbb", "aa"));
+//        System.out.println(solution.minwindow1("aaaaaaaaaaaabbbbbcdd", "abcdd"));
+//        System.out.println(solution.minwindow1
+//         ("wegdtzwabazduwwdysdetrrctotpcepalxdewzezbfewbabbseinxbqqplitpxtcwwhuyntbtzxwzyaufihclztckdwccpeyonumbpnuonsnnsjscrvpsqsftohvfnvtbphcgxyumqjzltspmphefzjypsvugqqjhzlnylhkdqmolggxvneaopadivzqnpzurmhpxqcaiqruwztroxtcnvhxqgndyozpcigzykbiaucyvwrjvknifufxducbkbsmlanllpunlyohwfsssiazeixhebipfcdqdrcqiwftutcrbxjthlulvttcvdtaiwqlnsdvqkrngvghupcbcwnaqiclnvnvtfihylcqwvderjllannflchdklqxidvbjdijrnbpkftbqgpttcagghkqucpcgmfrqqajdbynitrbzgwukyaqhmibpzfxmkoeaqnftnvegohfudbgbbyiqglhhqevcszdkokdbhjjvqqrvrxyvvgldtuljygmsircydhalrlgjeyfvxdstmfyhzjrxsfpcytabdcmwqvhuvmpssingpmnpvgmpletjzunewbamwiirwymqizwxlmojsbaehupiocnmenbcxjwujimthjtvvhenkettylcoppdveeycpuybekulvpgqzmgjrbdrmficwlxarxegrejvrejmvrfuenexojqdqyfmjeoacvjvzsrqycfuvmozzuypfpsvnzjxeazgvibubunzyuvugmvhguyojrlysvxwxxesfioiebidxdzfpumyon","ozgzyywxvtublcl"));
+
+//        System.out.println(solution.slidingWindow2("ADOBECOPEBANC", "ABC"));
+//        System.out.println(solution.slidingWindow2("ADOBECOPEBANCABC", "ABC"));
+//        System.out.println(solution
+//            .slidingWindow2("ask_not_what_your_country_can_do_for_you_ask_what_you_can_do_for_your_country",
+//            "ask_country"));
+//        System.out.println(solution.slidingWindow2("abbbb", "aa"));
+//        System.out.println(solution.slidingWindow2("aaaaaaaaaaaabbbbbcdd", "abcdd"));
+//        System.out.println(solution.slidingWindow2("abc", "ac"));
+//        System.out.println(solution.slidingWindow2("bba", "ab"));
+//
         System.out.println(solution.slidingWindow("ADOBECOPEBANC", "ABC"));
         System.out.println(solution.slidingWindow("ADOBECOPEBANCABC", "ABC"));
         System.out.println(solution
@@ -368,10 +346,73 @@ public class MinimumWindowSubstring {
         System.out.println(solution.slidingWindow("aaaaaaaaaaaabbbbbcdd", "abcdd"));
         System.out.println(solution.slidingWindow("abc", "ac"));
         System.out.println(solution.slidingWindow("bba", "ab"));
-        //
+        System.out.println(solution.slidingWindow("acbbaca", "aba"));
+
         System.out.println(solution.slidingWindow(
             "obzcopzocynyrsgsarijyxnkpnukkrvzuwdjldxndmnvevpgmxrmvfwkutwekrffnloyqnntbdohyfqndhzyoykiripdzwiojyoznbtogjyfpouuxvumtewmmnqnkadvzrvouqfbbdiqremqzgevkbhyoznacqwbhtrcjwfkzpdstpjswnpiqxjhywjanhdwavajrhwtwzlrqwmombxcaijzevbtcfsdcuovckoalcseaesmhrrizcjgxkbartdtotpsefsrjmvksqyahpijsrppdqpvmuocofuunonybjivbjviyftsyiicbzxnwnrmvlgkzticetyfcvqcbjvbufdxgcmesdqnowzpshuwcseenwjqhgsdlxatamysrohfnixfprdsljyyfhrnnjsagtuihuczilgvtfcjwgdhpbixlzmakebszxbhrdibpoxiwztshwczamwnninzmqrmpsviydkptjzpktksrortapgpxwojofxeasoyvyprjoguhqobehugwdvtzlenrcttuitsiijswpogicjolfxhiscjggzzissfcnxnvgftxvbfzkukqrtalvktdjsodmtgzqtuyaqvvrbuexgwqzwduixzrpnvegddyyywaquxjxrnuzlmyipuqotkghfkpknqinoidifnfyczzonxydtqroazxhjnrxfbmtlqcsfhshjrxwqvblovaouxwempdrrplefnxmwrwfjtebrfnfanvvmtbzjesctdgbsfnpxlwihalyiafincfcwgdfkvhebphtxukwgjgplrntsuchyjjuqozakiglangxkttsczhnswjksnuqwflmumpexxrznzwxurrysaokwxxqkrggytvsgkyfjrewrcvntomnoazmzycjrjrqemimyhriyxgrzcfuqtjhvjtuhwfzhwpljzajitrhryaqchnuawbxhxrpvyqcvhpggrpplhychyulijhkglinibedauhvdydkqszdbzfkzbvhldstocgydnbfjkcnkfxcyyfbzmmyojgzmasccaahpdnzproaxnexnkamwmkmwslksfpwirexxtymkmojztgmfhydvlqtddewjvsrmyqjrpycbmndhupmdqqabiuelacuvxnhxgtpvrtwfgzpcrbhhtikbcqpctlxszgpfbgcsbaaiapmtsucocmpecgixshrrnhyrpalralbccnxvjzjllarqhznzghswqsnfuyywmzbopyjyauknxddgdthlabjqtwxpxwljvoxkpjjpfvccyikbbrpdsyvlxscuoofkecwtnfkvcnzbxkeabtdusyhrqklhaqreupakxkfzxgawqfwsaboszvlshwzhosojjotgyagygguzntrouhiweuomqptfjjqsxlbylhwtpssdlltgubczxslqjgxuqnmpynnlwjgmebrpokxjnbiltvbebyytnnjlcwyzignmhedwqbfdepqakrelrdfesqrumptwwgifmmbepiktxavhuavlfaqxqhreznbvvlakzeoomykkzftthoemqwliednfsqcnbexbimrvkdhllcesrlhhjsspvfupxwdybablotibypmjutclgjurbmhztboqatrdwsomnxnmocvixxvfiqwmednahdqhxjkvcyhpxxdmzzuyyqdjibvmfkmonfxmohhshpkhmntnoplphqyprveyfsmsxjfosmicdsjrieeytpnbhlsziwxnpmgoxneqbnufhfwrjbqcsdfarybzwaplmxckkgclvwqdbpumsmqkswmjwnkuqbicykoisqwoootrdpdvcuiuswfqmrkctsgrevcxnyncmivsxbpbxzxpwchiwtkroqisnmrbmefbmatmdknaklpgpyqlsccgunaibsloyqpnsibwuowebomrmcegejozypjzjunjmeygozcjqbnrpakdermjcckartbcppmbtkhkmmtcngteigjnxxyzaibtdcwutkvpwezisskfaeljmxyjwykwglqlnofhycwuivdbnpintuyhtyqpwaoelgpbuwiuyeqhbvkqlsfgmeoheexbhnhutxvnvfjwlzfmvpcghiowocdsjcvqrdmkcizxnivbianfpsnzabxqecinhgfyjrjlbikrrgsbgfgyxtzzwwpayapfgueroncpxogouyrdgzdfucfrywtywjeefkvtzxlwmrniselyeodysirqflpduvibfdvedgcrzpzrunpadvawfsmmddqzaaahfxlifobffbyzqqbtlcpquedzjvykvarayfldvmkapjcfzfbmhscdwhciecsbdledspgpdtsteuafzbrjuvmsfrajtulwirzagiqjdiehefmfifocadxfuxrpsemavncdxuoaetjkavqicgndjkkfhbvbhjdcygfwcwyhpirrfjziqonbyxhibelinpllxsjzoiifscwzlyjdmwhnuovvugfhvquuleuzmehggdfubpzolgbhwyeqekzccuypaspozwuhbzbdqdtejuniuuyagackubauvriwneeqfhtwkocuipcelcfrcjcymcuktegiikyosumeioatfcxrheklookaqekljtvtdwhxsteajevpjviqzudnjnqbucnfvkybggaybebljwcstmktgnipdyrxbgewqczzkaxmeazpzbjsntltjwlmuclxirwytvxgvxscztryubtjweehapvxrguzzsatozzjytnamfyiitreyxmanhzeqwgpoikcjlokebksgkaqetverjegqgkicsyqcktmwjwakivtsxjwrgakphqincqrxqhzbcnxljzwturmsaklhnvyungjrxaonjqomdnxpnvihmwzphkyuhwqwdboabepmwgyatyrgtboiypxfavbjtrgwswyvcqhzwibpisydtmltbkydhznbsvxktyfxopwkxzbftzknnwipghuoijrbgqnzovxckvojvsqqraffwowfvqvfcmiicwitrhxdeombgesxexedlakitfovtydxunqnwqqdeeekiwjnwoshqcsljiicgobbbuqakjdonjawgjlezdnqhfdqnmsuavxdpnfzwipmspiabveaarshzwxmirgkmfncvtdrdvfxkpxlkdokxgtwcskmjryyymcthfnkasinihaunohkxaibtsqelockaefjmsuolebtnepauwmrxutspjwaxbmahsjtkfkxlnszribmeofbkyvbjscjtqjakuwvcgunvnonvqbbggfshauqsyznokqbhowjusypfnecffenojfvlblgzntqzlrgzprvhqnpfrrkzxznieiuivajivzijsqijigtatifmbplzqahuidegfoobpymkputzamzvweiyvvzlwihgmmmrcburbgbsdxrfjsbiylitghgcpqjbevvgypxcybubyoijijrhuzcdijfybqbfowlookqmlnplbxvjjosfqviygqyhgamuwzjklbyzopkrnhbywtfoqomweldmlrhjqswctubiknzzvcztyehouvnyiqnvkufaobehxhrjvtisxjlxoumipzjarwvbsaegdkpbsjmpevjbewzuqnfhoohhmdjgfpmjzdmtmykqvtucptwfidpwtwffzolffzqfdearclkyeecuzabjeqhxpmfodsvisnpxrqowdawheydfyhoexvcmihdlzavtqlshdhdgjzpozvvackebhgqppvcrvymljfvooauxcjnbejdivikcoaugxwzsulgfqdtefpehbrlhaoqxwcancuvbqutnfbuygoemditeagmcveatgaikwflozgdhkyfqmjcruyyuemwbqwxyyfiwnvlmbovlmccaoguieu",
             "cjgamyzjwxrgwedhsexosmswogckohesskteksqgrjonnrwhywxqkqmywqjlxnfrayykqotkzhxmbwvzstrcjfchvluvbaobymlrcgbbqaprwlsqglsrqvynitklvzmvlamqipryqjpmwhdcsxtkutyfoiqljfhxftnnjgmbpdplnuphuksoestuckgopnlwiyltezuwdmhsgzzajtrpnkkswsglhrjprxlvwftbtdtacvclotdcepuahcootzfkwqhtydwrgqrilwvbpadvpzwybmowluikmsfkvbebrxletigjjlealczoqnnejvowptikumnokysfjyoskvsxztnqhcwsamopfzablnrxokdxktrwqjvqfjimneenqvdxufahsshiemfofwlyiionrybfchuucxtyctixlpfrbngiltgtbwivujcyrwutwnuajcxwtfowuuefpnzqljnitpgkobfkqzkzdkwwpksjgzqvoplbzzjuqqgetlojnblslhpatjlzkbuathcuilqzdwfyhwkwxvpicgkxrxweaqevziriwhjzdqanmkljfatjifgaccefukavvsfrbqshhswtchfjkausgaukeapanswimbznstubmswqadckewemzbwdbogogcysfxhzreafwxxwczigwpuvqtathgkpkijqiqrzwugtr"));
     }
-    
+
+    /**
+     * 此方法未考虑t中包含重复字符也需要匹配的状况
+     */
+    public String minwindow1(String s, String t) {
+        if (s == null || s.length() == 0) {
+            return "";
+        }
+        if (t == null || t.length() == 0) {
+            return "";
+        }
+        Map<Character, Integer> map = new HashMap<>();
+        int target = processT2Map(t, map);
+        int[] array = changeToArray(s, map);
+        int start = 0;
+        while (start < s.length()) {
+            if (array[start] == 0) {
+                start++;
+            } else {
+                break;
+            }
+        }
+        int minLength = Integer.MAX_VALUE;
+        String result = "";
+        for (int i = start; i < s.length(); i++) {
+            int sum = 0;
+            int j = i;
+            while (j < s.length()) {
+                sum |= array[j];
+                if (sum == target) {
+                    int length = j - i + 1;
+                    if (length < minLength) {
+                        minLength = j - i + 1;
+                        result = s.substring(i, j + 1);
+                    }
+                }
+                j++;
+            }
+        }
+        return result;
+    }
+
+    private static int[] changeToArray(String s, Map<Character, Integer> map) {
+        int[] result = new int[s.length()];
+        for (int i = 0; i < s.length(); i++) {
+            Character c = s.charAt(i);
+            result[i] = map.getOrDefault(c, 0);
+        }
+        return result;
+    }
+
+    private static int processT2Map(String t, Map<Character, Integer> map) {
+        int value = 1, result = 0;
+        for (int i = 0; i < t.length(); i++) {
+            Character c = t.charAt(i);
+            if (!map.containsKey(c)) {
+                map.put(c, value);
+                result += value;
+                value = value << 1;
+            }
+        }
+        return result;
+    }
 }
