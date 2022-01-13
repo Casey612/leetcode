@@ -26,8 +26,4 @@ public class LengthOfLIS {
         return result;
     }
 
-    public static void main(String[] args) {
-
-    }
-
 }

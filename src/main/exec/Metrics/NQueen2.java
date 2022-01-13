@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * # 52
  * @author yuki
  * Created on 2021-12-22
  */
@@ -12,7 +13,7 @@ public class NQueen2 {
 
     int result = 0;
 
-    public int solveNQueens(int n) {
+    public int totalNQueens(int n) {
         List<String> cur = new ArrayList<>(n);
         backtrace(cur, 0, n);
         return result;
@@ -93,12 +94,8 @@ public class NQueen2 {
 
     public static void main(String[] args) {
         NQueen2 nQueen = new NQueen2();
-//        int result1 = nQueen.solveNQueens(1);
-//        System.out.println(result1);
-//        int result2 = nQueen.solveNQueens(2);
-//        System.out.println(result2);
-               int result4 = nQueen.solveNQueens(4);
-                System.out.println(result4);
+        int result4 = nQueen.totalNQueens(4);
+        System.out.println(result4);
     }
 
 
