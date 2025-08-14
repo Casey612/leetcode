@@ -78,9 +78,10 @@ public class SurroundedRegions {
             if (o == this) {
                 return true;
             }
-            if (!(o instanceof Position other)) {
+            if (!(o instanceof Position)) {
                 return false;
             }
+            Position other = (Position) o;
             return row == other.row && col == other.col;
         }
     }
